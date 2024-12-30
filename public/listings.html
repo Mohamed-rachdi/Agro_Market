@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Listings - AgroMarket</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style2.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo"><a href="index.html">AgroMarket</a></div>
+        <div class="nav-links" id="navLinks">
+            <!-- Dynamically generated nav links -->
+        </div>
+    </nav>
+
+    <main class="listings-container">
+        <!-- Filters Section -->
+        <div class="filters">
+            <!-- Filter for Type -->
+            <select id="typeFilter" onchange="applyFilters()">
+                <option value="">All Types</option>
+                <option value="land">Agricultural Land</option>
+                <option value="livestock">Livestock</option>
+                <option value="machinery">Machinery</option>
+            </select>
+            
+            <!-- Filter for City -->
+            <select id="cityFilter" onchange="updateAreas(); applyFilters()">
+                <option value="">Select City</option>
+                <option value="guercif">Guercif</option>
+                <option value="taourirt">Taourirt</option>
+            </select>
+            
+            <!-- Filter for Area (Dynamic based on City) -->
+            <select id="areaFilter" onchange="applyFilters()">
+                <option value="">Select Area</option>
+            </select>
+            
+            <!-- Filters for Price -->
+            <input type="number" id="priceMin" placeholder="Min Price" onchange="applyFilters()">
+            <input type="number" id="priceMax" placeholder="Max Price" onchange="applyFilters()">
+            
+            <!-- Filter for Space -->
+            <input type="number" id="spaceFilter" placeholder="Space (ha)" onchange="applyFilters()">
+            
+            <!-- Apply Filters Button -->
+            <button onclick="applyFilters()">Apply Filters</button>
+        </div>
+        
+        <script>
+            // Function to dynamically update areas based on city
+            function updateAreas() {
+                const city = document.getElementById('cityFilter').value;
+                const areaFilter = document.getElementById('areaFilter');
+                
+                // Clear existing options
+                areaFilter.innerHTML = '<option value="">Select Area</option>';
+                
+                // Populate areas based on the selected city
+                if (city === 'guercif') {
+                    const areas = ['Jal 1', 'Jal 2', 'Jal 3'];
+                    areas.forEach(area => {
+                        const option = document.createElement('option');
+                        option.value = area.toLowerCase().replace(/\s+/g, '');
+                        option.textContent = area;
+                        areaFilter.appendChild(option);
+                    });
+                } else if (city === 'taourirt') {
+                    const areas = ['Area A', 'Area B', 'Area C'];
+                    areas.forEach(area => {
+                        const option = document.createElement('option');
+                        option.value = area.toLowerCase().replace(/\s+/g, '');
+                        option.textContent = area;
+                        areaFilter.appendChild(option);
+                    });
+                }
+            }
+        
+            // Function to apply all filters
+            function applyFilters() {
+                const type = document.getElementById('typeFilter').value;
+                const city = document.getElementById('cityFilter').value;
+                const area = document.getElementById('areaFilter').value;
+                const priceMin = document.getElementById('priceMin').value;
+                const priceMax = document.getElementById('priceMax').value;
+                const space = document.getElementById('spaceFilter').value;
+        
+                // Log or handle the filters as needed
+                console.log({
+                    type,
+                    city,
+                    area,
+                    priceMin,
+                    priceMax,
+                    space
+                });
+                
+                // Implement your filtering logic here...
+            }
+        </script>
+        
+
+        <!-- Listings Grid -->
+        <div id="listingsGrid" class="listings-grid">
+            <!-- Listings will be populated here dynamically -->
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 AgroMarket. All rights reserved.</p>
+    </footer>
+
+    <script src="js/listings.js"></script>
+
+    <script>
+        // Function to check if user is logged in
+        function checkLoginState() {
+            fetch('http://localhost:5000/check-login', {
+                method: 'GET',
+                credentials: 'include'
+            })
+            .then(response => response.json())
+            .then(data => {
+                const navLinks = document.getElementById('navLinks');
+                
+                if (data.loggedIn) {
+                    navLinks.innerHTML = `
+                        <a href="index.html">Home</a>
+                        <a href="listings.html" class="active">Listings</a>
+                        <a href="Dashboard.html" id="Dashboard">Dashboard</a>
+                        <a href="logout.html" id="logoutBtn">Logout</a>
+                    `;
+                    document.getElementById('logoutBtn').addEventListener('click', function (event) {
+                        event.preventDefault();
+                        fetch('http://localhost:5000/logout', {
+                            method: 'POST',
+                            credentials: 'include'
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            location.href = 'index.html';
+                        })
+                        .catch(error => console.error('Logout failed:', error));
+                    });
+                } else {
+                    navLinks.innerHTML = `
+                        <a href="index.html">Home</a>
+                        <a href="listings.html" class="active">Listings</a>
+                        <a href="login.html">Login</a>
+                        <a href="register.html">Register</a>
+                    `;
+                }
+            })
+            .catch(error => {
+                console.error('Error checking login state:', error);
+            });
+        }
+    
+        document.addEventListener('DOMContentLoaded', checkLoginState);
+    
+        // Fetch and display products based on filters
+        function fetchProducts(typeFilter = '', priceMin = '', priceMax = '') {
+    const url = new URL('http://localhost:5000/api/allproducts');
+    const params = new URLSearchParams();
+
+    // Add filters to query parameters if they exist
+    if (typeFilter) params.append('type', typeFilter);
+    if (priceMin) params.append('priceMin', priceMin);
+    if (priceMax) params.append('priceMax', priceMax);
+
+    url.search = params.toString();
+
+    console.log("Fetching products with params:", params.toString()); // Log the query string
+
+    fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                console.log('Fetched Data:', data); // Log the full response to verify user_name field
+                const listingsGrid = document.getElementById('listingsGrid');
+                listingsGrid.innerHTML = ''; // Clear previous listings
+
+                if (data.length === 0) {
+                    listingsGrid.innerHTML = "<p>No products found with the selected filters.</p>";
+                } else {
+                    data.forEach(product => {
+                        console.log('Product:', product); // Log each product to check if user_name exists
+                        const productDiv = document.createElement('div');
+                        productDiv.classList.add('listing-card');
+                        productDiv.innerHTML = `
+                            <img src="${product.image}" alt="${product.title}">
+                            <div class="listing-info">
+                                <h3>${product.title}</h3>
+                                <p>Price: $${product.price}</p>
+                                <p>Location: ${product.location}</p>
+                                <p>Seller: ${product.name || 'Unknown'}</p> <!-- Display seller name or 'Unknown' if not available -->
+                                <button onclick="viewListing(${product.id})">View Details</button>
+                            </div>
+                        `;
+                        listingsGrid.appendChild(productDiv);
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching products:', error);
+            });
+
+}
+
+        // Call fetchProducts when the page is loaded
+        document.addEventListener('DOMContentLoaded', () => fetchProducts());
+
+        function applyFilters() {
+            const typeFilter = document.getElementById('typeFilter').value;
+            const priceMin = document.getElementById('priceMin').value;
+            const priceMax = document.getElementById('priceMax').value;
+
+            fetchProducts(typeFilter, priceMin, priceMax);
+        }
+
+    </script>
+    
+</body>
+</html>

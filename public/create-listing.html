@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Listing - AgroMarket</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo"><a href="index.html">AgroMarket</a></div>
+        <div class="nav-links" id="navLinks">
+            <!-- These will be dynamically replaced based on the login state -->
+        </div>
+    </nav>
+
+    <main class="create-listing-container">
+        <h1>Create New Listing</h1>
+        <form id="listingForm" class="listing-form" method="POST" action="http://localhost:5000/api/create-listing">
+            <div class="form-group">
+                <label>Listing Type</label>
+                <select name="listingType" required>
+                    <option value="livestock" selected>Livestock</option>
+                    <option value="land">Agricultural Land</option>
+                    <option value="machinery">Agricultural Machinery</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Your name</label>
+                <input type="text" name="title" value="" required>
+            </div>
+
+            <div class="form-group">
+                <label>Price</label>
+                <input type="number" name="price" value="" required>
+            </div>
+
+            <div class="form-group">
+                <label>Location</label>
+                <input type="text" name="location" value="" required>
+            </div>
+
+            <div class="form-group">
+                <label>Image</label>
+                <input type="text" name="image" value="" required>
+            </div>
+
+            <button type="submit" class="submit-button">Create Listing</button>
+        </form>
+    </main>
+
+    <script src="js/create-listing.js"></script>
+    <script>
+        // Check if user is logged in
+        fetch('http://localhost:5000/check-login', {
+            method: 'GET',
+            credentials: 'include' // Ensure cookies are sent for the request
+        })
+        .then(response => response.json())
+        .then(data => {
+            const navLinks = document.getElementById('navLinks');
+            
+            if (data.loggedIn) {
+                navLinks.innerHTML = `
+                    <a href="index.html" class="active">Home</a>
+                    <a href="listings.html">Listings</a>
+                    <a href="Dashboard.html" id="Dashboard">Dashboard</a>
+                    <a href="logout.html" id="logoutBtn">Logout</a>
+                `;
+    
+                // Handle logout click
+                document.getElementById('logoutBtn').addEventListener('click', function (event) {
+                    event.preventDefault();
+                    fetch('http://localhost:5000/logout', {
+                        method: 'POST',
+                        credentials: 'include' // Include credentials for logout
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        // After logout, redirect to home or login page
+                        location.href = 'index.html';
+                    })
+                    .catch(error => console.error('Logout failed:', error));
+                });
+    
+            } else {
+                navLinks.innerHTML = `
+                    <a href="index.html" class="active">Home</a>
+                    <a href="listings.html">Listings</a>
+                    <a href="login.html">Login</a>
+                    <a href="register.html">Register</a>
+                `;
+            }
+        })
+        .catch(error => {
+            console.error('Error checking login state:', error);
+        });
+    </script>
+</body>
+</html>

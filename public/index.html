@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgroMarket - Agricultural Marketplace</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo"><a href="index.html">AgroMarket</a></div>
+        <div class="nav-links" id="navLinks">
+            <!-- These will be dynamically replaced based on the login state -->
+        </div>
+    </nav>
+    <main>
+        <section class="hero">
+            <h1>Welcome to AgroMarket</h1>
+            <p>Your trusted platform for agricultural land and products</p>
+            <button onclick="location.href='create-listing.html'" class="cta-button">Create Listing</button>
+        </section>
+
+        <section class="featured-listings">
+            <div class="filter-container">
+                <button class="filter-btn" onclick="filterListings('lands')">Lands</button>
+                <button class="filter-btn" onclick="filterListings('tools')">Agricultural Tools</button>
+                <button class="filter-btn" onclick="filterListings('fertilizers')">Fertilizers</button>
+            </div>
+            <div id="featuredListings" class="listings-grid"></div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 AgroMarket. All rights reserved.</p>
+    </footer>
+
+    <script src="js/main.js"></script>
+    <script>
+        // Function to fetch and display all products
+        function fetchFeaturedProducts() {
+            fetch('http://localhost:5000/api/allproducts')  // Correct endpoint name
+                .then(response => response.json())
+                .then(data => {
+                    const featuredListings = document.getElementById('featuredListings');
+                    featuredListings.innerHTML = '';  // Clear previous listings
+
+                    data.forEach(product => {
+                        const productDiv = document.createElement('div');
+                        productDiv.classList.add('listing-card');
+                        productDiv.innerHTML = `
+                            <img src="${product.image}" alt="${product.title}" class="product-image">
+                            <div class="listing-info">
+                                <h3>${product.title}</h3>
+                                <p>Price: $${product.price}</p>
+                                <p>Location: ${product.location}</p>
+                                <button onclick="viewListing(${product.id})">View Details</button>
+                            </div>
+                        `;
+                        featuredListings.appendChild(productDiv);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching featured products:', error);
+                });
+        }
+
+        // Call the fetchFeaturedProducts function when the page is loaded
+        document.addEventListener('DOMContentLoaded', fetchFeaturedProducts);
+
+        // Check if user is logged in
+        fetch('http://localhost:5000/check-login', {
+            method: 'GET',
+            credentials: 'include' // Ensure cookies are sent for the request
+        })
+        .then(response => response.json())
+        .then(data => {
+            const navLinks = document.getElementById('navLinks');
+            
+            if (data.loggedIn) {
+                navLinks.innerHTML = `
+                    <a href="index.html" class="active">Home</a>
+                    <a href="listings.html">Listings</a>
+                    <a href="Dashboard.html" id="Dashboard">Dashboard</a>
+                    <a href="logout.html" id="logoutBtn">Logout</a>
+                `;
+    
+                // Handle logout click
+                document.getElementById('logoutBtn').addEventListener('click', function (event) {
+                    event.preventDefault();
+                    fetch('http://localhost:5000/logout', {
+                        method: 'POST',
+                        credentials: 'include' // Include credentials for logout
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        // After logout, redirect to home or login page
+                        location.href = 'index.html';
+                    })
+                    .catch(error => console.error('Logout failed:', error));
+                });
+    
+            } else {
+                navLinks.innerHTML = `
+                    <a href="index.html" class="active">Home</a>
+                    <a href="listings.html">Listings</a>
+                    <a href="login.html">Login</a>
+                    <a href="register.html">Register</a>
+                `;
+            }
+        })
+        .catch(error => {
+            console.error('Error checking login state:', error);
+        });
+    </script>
+</body>
+</html>

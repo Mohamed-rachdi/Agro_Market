@@ -1,0 +1,51 @@
+.auth-section {
+ padding: 40px;
+ max-width: 400px;
+ margin: 50px auto;
+ background-color: white;
+ border-radius: 8px;
+ box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.auth-section h2 {
+ text-align: center;
+ margin-bottom: 20px;
+}
+
+.auth-section form {
+ display: flex;
+ flex-direction: column;
+}
+
+.auth-section input {
+ padding: 10px;
+ margin: 10px 0;
+ border: 1px solid #ccc;
+ border-radius: 5px;
+}
+
+.auth-section button {
+ padding: 10px;
+ background-color: #175633;
+ color: white;
+ border: none;
+ border-radius: 5px;
+ cursor: pointer;
+}
+
+.auth-section button:hover {
+ background-color: #1c442e;
+}
+/* Appliquer à tout le body pour s'assurer qu'il prend la pleine hauteur de la page */
+body {
+ display: flex;
+ flex-direction: column;
+ min-height: 100vh; /* Prend toute la hauteur de la fenêtre */
+ margin: 0; /* Supprimer les marges par défaut */
+}
+
+/* Le main prend tout l'espace disponible */
+main {
+ flex: 1; /* S'étire pour occuper tout l'espace restant */
+}
+
